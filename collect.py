@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 import time
 from datetime import datetime, timezone
@@ -22,17 +23,17 @@ def fetch_with_retry(app_id, attempts=3, wait=5):
     for i in range(attempts):
         try:
             return fetch_players(app_id)
-        except requests.RequestException:
+        except requests.RequestException as e:
             if i == attempts - 1:
                 raise
-            print(f"  第 {i + 1} 次失败，{wait} 秒后重试")
+            logging.warning(f"app_id {app_id}: 第 {i + 1} 次失败（{type(e).__name__}），{wait} 秒后重试")
             time.sleep(wait)
 
 
 def main():
     now = datetime.now(timezone.utc)
     collected_at = now.replace(minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
-    print("采集时间（UTC）：", collected_at)
+    logging.info(f"开始采集，collected_at = {collected_at} UTC")
 
     con = sqlite3.connect(DB_PATH)
     con.execute("PRAGMA foreign_keys = ON")
@@ -44,12 +45,12 @@ def main():
         try:
             players = fetch_with_retry(app_id)
         except requests.RequestException as e:
-            print(f"{name}: 请求失败，跳过（{e}）")
+            logging.error(f"{name}: 请求失败，跳过（{type(e).__name__}）")
             continue
         if players is None:
-            print(f"{name}: 暂无数据，跳过")
+            logging.info(f"{name}: 暂无数据，跳过")
             continue
-        print(f"{name}: {players}")
+        logging.info(f"{name}: {players}")
         cur = con.execute(
             "INSERT OR IGNORE INTO player_count (game_id, collected_at, players) VALUES (?, ?, ?)",
             (game_id, collected_at, players),
@@ -58,8 +59,9 @@ def main():
 
     con.commit()
     con.close()
-    print(f"写入 {saved} 条")
+    logging.info(f"采集结束，写入 {saved} 条")
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     main()
