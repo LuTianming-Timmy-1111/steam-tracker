@@ -51,8 +51,9 @@ def plot(df):
         wide.plot(ax=ax)
         ax.set_title(grp)
         ax.set_xlabel("")
-    for ax in axes.flat[len(groups):]:
-        ax.axis("off")
+    for i in range(len(groups), 4):
+        axes.flat[i].axis("off")
+        axes.flat[i - 2].tick_params(labelbottom=True, which="both")
     fig.supylabel("人数 / 当日均值")
     fig.tight_layout()
     OUT_DIR.mkdir(exist_ok=True)
