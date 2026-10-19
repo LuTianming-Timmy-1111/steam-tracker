@@ -17,6 +17,17 @@ def fetch_players(app_id):
     return data["player_count"]
 
 
+def fetch_with_retry(app_id, attempts=3, wait=5):
+    for i in range(attempts):
+        try:
+            return fetch_players(app_id)
+        except requests.RequestException:
+            if i == attempts - 1:
+                raise
+            print(f"  第 {i + 1} 次失败，{wait} 秒后重试")
+            time.sleep(wait)
+
+
 def main():
     now = datetime.now(timezone.utc)
     collected_at = now.replace(minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
@@ -30,7 +41,7 @@ def main():
     for game_id, app_id, name in games:
         time.sleep(1)
         try:
-            players = fetch_players(app_id)
+            players = fetch_with_retry(app_id)
         except requests.RequestException as e:
             print(f"{name}: 请求失败，跳过（{e}）")
             continue
