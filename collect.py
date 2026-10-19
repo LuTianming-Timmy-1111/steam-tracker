@@ -23,9 +23,10 @@ def main():
     print("采集时间（UTC）：", collected_at)
 
     con = sqlite3.connect(DB_PATH)
+    con.execute("PRAGMA foreign_keys = ON")
     games = con.execute("SELECT id, app_id, name FROM game ORDER BY id").fetchall()
-    con.close()
 
+    saved = 0
     for game_id, app_id, name in games:
         time.sleep(1)
         try:
@@ -37,6 +38,15 @@ def main():
             print(f"{name}: 暂无数据，跳过")
             continue
         print(f"{name}: {players}")
+        cur = con.execute(
+            "INSERT OR IGNORE INTO player_count (game_id, collected_at, players) VALUES (?, ?, ?)",
+            (game_id, collected_at, players),
+        )
+        saved += cur.rowcount
+
+    con.commit()
+    con.close()
+    print(f"写入 {saved} 条")
 
 
 if __name__ == "__main__":
