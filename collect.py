@@ -5,7 +5,8 @@ from pathlib import Path
 
 import requests
 
-DB_PATH = Path("data/steam.db")
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "data" / "steam.db"
 API_URL = "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/"
 
 

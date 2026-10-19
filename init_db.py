@@ -1,8 +1,9 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("data/steam.db")
-SCHEMA_PATH = Path("schema.sql")
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "data" / "steam.db"
+SCHEMA_PATH = BASE_DIR / "schema.sql"
 
 GROUPS = ["3A", "魂类", "新作"]
 
