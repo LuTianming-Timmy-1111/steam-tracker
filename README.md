@@ -125,3 +125,22 @@ venv/bin/python init_db.py           # 仅当游戏列表有变化时需要
 | `backup.py` | 备份数据库，保留最近 7 份 |
 | `run_collect.sh`、`run_backup.sh` | cron 调用的入口脚本 |
 | `requirements.txt` | Python 依赖，版本固定 |
+
+## 分析
+
+分析在开发环境进行，读取 `backups/` 中最新的一份备份，不直接访问服务器上的数据库。
+
+```bash
+venv/bin/pip install -r requirements-analysis.txt
+venv/bin/python analysis/03_hourly_curve.py
+```
+
+图中的中文需要字体：将中文 TrueType 字体放在 `fonts/simhei.ttf`（脚本按此文件名读取）。`fonts/` 与 `analysis/output/` 均不进 Git。
+
+| 文件 | 说明 |
+|---|---|
+| `analysis/01_hourly_by_game.sql` | 各游戏每小时人数（北京时间） |
+| `analysis/02_rows_per_game.sql` | 各游戏已采集条数 |
+| `analysis/03_hourly_curve.py` | 各游戏人数随时间的变化，以各自均值归一化，按分组分图 |
+
+归一化以采集期内的均值为分母，数据增加后图形会随之变化。数据不足一周时，日内作息与星期效应无法区分。
