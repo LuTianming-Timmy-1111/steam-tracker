@@ -143,5 +143,6 @@ venv/bin/python analysis/03_hourly_curve.py
 | `analysis/02_rows_per_game.sql` | 各游戏已采集条数 |
 | `analysis/03_hourly_curve.py` | 各游戏人数随时间的变化，以各自均值归一化，按分组分图 |
 | `analysis/04_pre_trend.py` | 发售前各组日均人数（仅完整的天），用于检查平行趋势 |
+| `analysis/05_hour_of_day.py` | 按几点钟的人数规律，工作日与周末分开（仅完整的天） |
 
 归一化以采集期内的均值为分母，数据增加后图形会随之变化。数据不足一周时，日内作息与星期效应无法区分。
