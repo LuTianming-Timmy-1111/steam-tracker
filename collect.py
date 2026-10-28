@@ -16,7 +16,11 @@ def fetch_players(app_id):
     data = resp.json()["response"]
     if data.get("result") != 1:
         return None
-    return data["player_count"]
+    count = data["player_count"]
+    if count == 0:
+        logging.warning(f"app_id {app_id}: 返回 0 人，视为异常，本次不写入")
+        return None
+    return count
 
 
 def fetch_with_retry(app_id, attempts=3, wait=5):
