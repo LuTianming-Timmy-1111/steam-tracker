@@ -4,8 +4,10 @@ import pandas as pd
 
 from common import OUT_DIR, load, setup_font
 
+LAUNCH = pd.Timestamp("2026-10-29 10:00:00", tz="Asia/Shanghai")
+EXCLUDE = {"赛博朋克2077", "鬼武者：剑之道"}
+
 def daily_ratio(df):
-    df["bj"] = pd.to_datetime(df["collected_at"], utc=True).dt.tz_convert("Asia/Shanghai")
     df["date"] = df["bj"].dt.date
     n = df.groupby(["game", "date"])["players"].transform("size")
     full = df[n == 24]
@@ -17,8 +19,8 @@ def daily_ratio(df):
 def plot(by_grp):
     ax = by_grp.plot(marker="o", figsize=(10, 5))
     ax.axhline(1, color="gray", linewidth=0.8, linestyle="--")
-    ax.xaxis.set_major_locator(mdates.DayLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+    ax.xaxis.set_major_locator(mdates.DayLocator(tz="UTC"))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d", tz="UTC"))
     ax.set_title("各组日均人数（仅完整的天，以各游戏自身均值归一化）")
     ax.set_xlabel("日期（北京时间）")
     ax.set_ylabel("日均人数 / 均值")
@@ -30,7 +32,10 @@ def plot(by_grp):
 
 def main():
     setup_font()
-    daily = daily_ratio(load())
+    df = load()
+    df = df[df["bj"] < LAUNCH]
+    df = df[~df["game"].isin(EXCLUDE)]
+    daily = daily_ratio(df)
     by_grp = daily.pivot_table(index="date", columns="grp", values="ratio")
     print(by_grp.round(3))
     plot(by_grp)
