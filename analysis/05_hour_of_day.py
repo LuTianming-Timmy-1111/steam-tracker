@@ -1,37 +1,7 @@
-import sqlite3
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib import font_manager
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-BACKUP_DIR = BASE_DIR / "backups"
-OUT_DIR = BASE_DIR / "analysis" / "output"
-FONT_PATH = BASE_DIR / "fonts" / "simhei.ttf"
-
-SQL = """
-SELECT g.name AS game, gg.name AS grp, p.collected_at, p.players
-FROM player_count p
-JOIN game g ON p.game_id = g.id
-JOIN game_group gg ON g.group_id = gg.id
-"""
-
-
-def setup_font():
-    font_manager.fontManager.addfont(FONT_PATH)
-    name = font_manager.FontProperties(fname=FONT_PATH).get_name()
-    plt.rcParams["font.family"] = name
-
-
-def load():
-    db = sorted(BACKUP_DIR.glob("steam-*.db"))[-1]
-    con = sqlite3.connect(db)
-    df = pd.read_sql(SQL, con)
-    con.close()
-    print("读取", db.name, len(df), "行")
-    return df
-
+from common import OUT_DIR, load, setup_font
 
 def prepare(df):
     df["bj"] = pd.to_datetime(df["collected_at"], utc=True).dt.tz_convert("Asia/Shanghai")
