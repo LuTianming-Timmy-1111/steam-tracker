@@ -1,5 +1,6 @@
 import pandas as pd
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
 from common import OUT_DIR, load, setup_font
@@ -31,6 +32,7 @@ def main():
     ax2.axvline(launch, color="red", linestyle="--")
     ax2.set_title("魂类：相对发售前均值")
     ax2.legend(fontsize=8, ncol=4)
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
     OUT_DIR.mkdir(exist_ok=True)
     fig.savefig(OUT_DIR / "06_launch.png", dpi=120)
     print("已保存", OUT_DIR / "06_launch.png")
