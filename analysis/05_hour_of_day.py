@@ -1,10 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from common import OUT_DIR, load, setup_font
+from common import LAUNCH, OUT_DIR, load, setup_font
 
 def prepare(df):
-    df["bj"] = pd.to_datetime(df["collected_at"], utc=True).dt.tz_convert("Asia/Shanghai")
     df["date"] = df["bj"].dt.date
     df["hour"] = df["bj"].dt.hour
     df["weekend"] = df["bj"].dt.dayofweek >= 5
@@ -45,7 +44,9 @@ def plot(df):
 
 def main():
     setup_font()
-    df = prepare(load())
+    df = load()
+    df = df[df["bj"] < LAUNCH]
+    df = prepare(df)
     plot(df)
 
 

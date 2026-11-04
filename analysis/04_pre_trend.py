@@ -2,9 +2,8 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from common import OUT_DIR, load, setup_font
+from common import LAUNCH, OUT_DIR, load, setup_font
 
-LAUNCH = pd.Timestamp("2026-10-29 10:00:00", tz="Asia/Shanghai")
 EXCLUDE = {"赛博朋克2077", "鬼武者：剑之道"}
 
 def daily_ratio(df):

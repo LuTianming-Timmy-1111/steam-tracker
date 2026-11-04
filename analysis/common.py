@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BACKUP_DIR = BASE_DIR / "backups"
 OUT_DIR = BASE_DIR / "analysis" / "output"
 FONT_PATH = BASE_DIR / "fonts" / "simhei.ttf"
+LAUNCH = pd.Timestamp("2026-10-29 10:00", tz="Asia/Shanghai")
 
 SQL = """
 SELECT g.name AS game, gg.name AS grp, p.collected_at, p.players
