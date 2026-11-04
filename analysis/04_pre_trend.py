@@ -4,6 +4,8 @@ import pandas as pd
 
 from common import LAUNCH, OUT_DIR, load, setup_font
 
+# 赛博朋克2077：10/20 动画第二季首播、10/22 更新 2.5、Steam 7 折至 10/26，10/23 起人数暴涨，与影之刃零无关
+# 鬼武者：剑之道：发售一个多月，处于自身衰退期
 EXCLUDE = {"赛博朋克2077", "鬼武者：剑之道"}
 
 def daily_ratio(df):
