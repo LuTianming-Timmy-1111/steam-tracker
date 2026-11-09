@@ -78,6 +78,9 @@ def collect(con, app_id, max_pages=5, stop_when_seen=True, cursor="*", cursor_fi
         if cursor_file:
             cursor_file.write_text(cursor)
         time.sleep(2)
+    else:
+        if stop_when_seen:
+            logging.warning(f"app_id {app_id} 翻满 {max_pages} 页仍未停下，可能有遗漏")
     return total
 
 
