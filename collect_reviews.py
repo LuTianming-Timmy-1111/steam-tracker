@@ -71,7 +71,7 @@ def collect(con, app_id, max_pages=5, stop_when_seen=True, cursor="*", cursor_fi
     reviews = []
     for page in range(max_pages):
         try:
-            data = fetch_page(app_id, cursor)
+            data = fetch_with_retry(app_id, cursor)
         except requests.HTTPError as e:
             if e.response is not None and e.response.statuscode == 429:
                 logging.warning("被限流 (429)，进度已保存，过一阵再跑")
