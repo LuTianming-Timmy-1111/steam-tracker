@@ -98,7 +98,7 @@ def collect(con, app_id, max_pages=5, stop_when_seen=True, cursor="*", cursor_fi
 
 
 def main():
-    con = sqlite3.connect(DB_PATH)
+    con = sqlite3.connect(DB_PATH, timeout=60)
     if len(sys.argv) > 1 and sys.argv[1] == "backfill":
         pages = int(sys.argv[2]) if len(sys.argv) > 2 else 5
         cursor_file = BASE_DIR / "data" / f"review_cursor_{APP_ID}.txt"

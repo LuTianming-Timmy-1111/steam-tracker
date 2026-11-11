@@ -39,7 +39,7 @@ def main():
     collected_at = now.replace(minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
     logging.info(f"开始采集，collected_at = {collected_at} UTC")
 
-    con = sqlite3.connect(DB_PATH)
+    con = sqlite3.connect(DB_PATH, timeout=60)
     con.execute("PRAGMA foreign_keys = ON")
     games = con.execute("SELECT id, app_id, name FROM game ORDER BY id").fetchall()
 
