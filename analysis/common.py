@@ -19,18 +19,39 @@ JOIN game g ON p.game_id = g.id
 JOIN game_group gg ON g.group_id = gg.id
 """
 
+SQL_REVIEWS = """
+SELECT r.recommendationid, g.name AS game, r.voted_up,
+       r.playtime_at_review, r.votes_up, r.created, r.review
+FROM review r
+JOIN game g ON r.app_id = g.app_id
+"""
 
-def load():
+
+def latest_backup():
     dbs = sorted(BACKUP_DIR.glob("steam-*.db"))
     if not dbs:
-        raise SystemExit(f"{BACKUP_DIR} 里没有steam-*.db，先从 Windows 传一份备份过来")
-    db = dbs[-1]
+        raise SystemExit(f"{BACKUP_DIR} 里没有 steam-*.db，先从 Windows 传一份备份过来")
+    return dbs[-1]
+
+
+def load():
+    db = latest_backup()
     con = sqlite3.connect(db)
     df = pd.read_sql(SQL, con)
     con.close()
     df["bj"] = pd.to_datetime(df["collected_at"], utc=True).dt.tz_convert("Asia/Shanghai")
     df["players"] = df["players"].mask(df["players"] == 0)
     print("读取", db.name, len(df), "行")
+    return df
+
+
+def load_reviews():
+    db = latest_backup()
+    con = sqlite3.connect(db)
+    df = pd.read_sql(SQL_REVIEWS, con)
+    con.close()
+    df["bj"] = pd.to_datetime(df["created"], unit="s", utc=True).dt.tz_convert("Asia/Shanghai")
+    print("读取", db.name, len(df), "条评论")
     return df
 
 
