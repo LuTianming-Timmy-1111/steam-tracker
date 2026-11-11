@@ -29,6 +29,17 @@ def fetch_page(app_id, cursor="*"):
     return resp.json()["response"]
 
 
+def fetch_with_retry(app_id, cursor, attempts=3, wait=10):
+    for i in range(attempts):
+        try:
+            return fetch_page(app_id, cursor)
+        except (requests.Timeout, requests.ConnectionError) as e:
+            if i == attempts - 1:
+                raise
+            logging.warning(f"app_id {app_id}: 第 {i + 1} 次请求失败（{type(e).__name__}），{wait} 秒后重试")
+            time.sleep(wait)
+
+
 def save(con, app_id, reviews):
     rows = [
         (
@@ -56,6 +67,8 @@ def save(con, app_id, reviews):
 
 def collect(con, app_id, max_pages=5, stop_when_seen=True, cursor="*", cursor_file=None):
     total = 0
+    n = 0
+    reviews = []
     for page in range(max_pages):
         try:
             data = fetch_page(app_id, cursor)
@@ -79,8 +92,8 @@ def collect(con, app_id, max_pages=5, stop_when_seen=True, cursor="*", cursor_fi
             cursor_file.write_text(cursor)
         time.sleep(2)
     else:
-        if stop_when_seen:
-            logging.warning(f"app_id {app_id} 翻满 {max_pages} 页仍未停下，可能有遗漏")
+        if stop_when_seen and n == len(reviews):
+            logging.warning(f"app_id {app_id} 翻满 {max_pages} 页且最后一页全是新评论，可能有遗漏")
     return total
 
 
