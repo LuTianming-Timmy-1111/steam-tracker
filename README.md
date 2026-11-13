@@ -50,13 +50,16 @@
 | `game_group` | 分组 |
 | `game` | 游戏：Steam AppID、名称、分组、发售日期（可空） |
 | `player_count` | 在线人数，主键为 `(game_id, collected_at)`，每款游戏每小时一条 |
+| `review` | 简体中文评论，主键为 `recommendationid`；含 AppID、语言、是否好评（1/0）、写评论时的游戏时长（分钟）、觉得有用的人数、发布时间（Unix 时间戳，UTC）、正文 |
 
 约定：
 
 - `collected_at` 为 **UTC** 时间，取整到小时，格式 `YYYY-MM-DD HH:00:00`。查询时可用 `datetime(collected_at, '+8 hours')` 换算为北京时间。
 - 每小时第 5 分钟采集。Steam 接口有数分钟的缓存，数值是近似的时点快照。
-- 接口无数据（如发售前的影之刃零，返回 `result: 42`）或三次请求均失败时，该小时**不插入**记录，以缺行表示缺数据。
+- 接口无数据（如发售前的影之刃零，返回 `result: 42`）、返回 0 人（接口偶发异常，几款游戏同时归零），或三次请求均失败时，该小时**不插入**记录，以缺行表示缺数据。
 - 同一小时重复采集时保留首次写入的值（`INSERT OR IGNORE`），可在第 35 分钟补采失败的游戏。
+- 评论每小时第 25 分钟增量采集：从最新翻起，一整页都已存过就停。补历史用 `run_reviews.sh backfill 页数`，进度存在 `data/review_cursor_<AppID>.txt`，中断后可接着翻。
+- 评论用 `INSERT ... ON CONFLICT(recommendationid) DO NOTHING` 去重：只跳过重复的评论，其他约束错误照常报错。
 
 查询示例：艾尔登法环的在线人数，按北京时间显示
 
@@ -76,6 +79,10 @@ git clone https://github.com/LuTianming-Timmy-1111/steam-tracker.git
 cd steam-tracker
 apt install python3.12-venv          # Ubuntu 默认未安装，否则无法创建 venv
 python3 -m venv venv
+| `collect_reviews.py` | 评论采集：每日增量 / 补历史（断点续翻）；超时和连接错误重试 3 次，429 限流时保存进度退出 |
+| `health_check.py` | 健康检查：采集停滞超过 90 分钟、近 60 分钟有 ERROR、05:00 后没有当天备份、磁盘剩余不足 10%，有新问题或恢复时发邮件 |
+| `run_reviews.sh`、`run_health.sh` | cron 调用的入口脚本 |
+| `analysis/` | 分析脚本，公共函数在 `common.py`；03–06 在线人数，07–09 评论 |
 venv/bin/pip install -r requirements.txt
 venv/bin/python init_db.py           # 建表并录入游戏，可重复执行
 ```
