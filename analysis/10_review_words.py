@@ -9,13 +9,16 @@ STOPWORDS = {
     "游戏", "这个", "就是", "但是", "真的", "没有", "还是", "感觉", "一个", "什么",
     "可以", "因为", "所以", "觉得", "自己", "已经", "如果", "这样", "然后", "不是",
     "非常", "有点", "还有", "而且", "虽然", "现在", "时候", "这种", "一些", "知道",
+    "玩家", "直接", "不能", "一样", "完全", "一下", "只能", "很多", "这么", "那个",
+    "一点",
 }
 
 
 def tokenize(text):
     words = jieba.lcut(text or "")
+    result = [ w.lower() for w in words ]
     return [
-        w for w in words
+        w for w in result
         if len(w) >= 2
         and w not in STOPWORDS
         and re.fullmatch(r"[\u4e00-\u9fa5a-zA-Z]+", w)
