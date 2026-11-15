@@ -1,6 +1,8 @@
 import re
 from collections import Counter
 
+import pandas as pd
+
 import jieba
 
 from common import load_reviews
@@ -25,17 +27,31 @@ def tokenize(text):
     ]
 
 
+def doc_freq(texts):
+    counter = Counter()
+    for text in texts:
+        counter.update(set(tokenize(text)))
+    return counter
+
+
 def main():
     df = load_reviews()
     neg = df[df["voted_up"] == 0]
-    print("差评", len(neg), "条")
+    pos = df[df["voted_up"] == 1]
+    neg_c = doc_freq(neg["review"])
+    pos_c = doc_freq(pos["review"])
+    
+    rows = []
+    for word, c in neg_c.items():
+        if c < 50:
+            continue
+        neg_rate = c / len(neg)
+        pos_rate = (pos_c[word] + 1) / len(pos)
+        rows.append((word, c, neg_rate, pos_rate))
 
-    counter = Counter()
-    for text in neg["review"]:
-        counter.update(tokenize(text))
-
-    for word, n in counter.most_common(30):
-        print(word, n)
+    result = pd.DataFrame(rows, columns=["word", "neg_n", "neg_rate", "pos_rate"])
+    result["ratio"] = result["neg_rate"] / result["pos_rate"]
+    print(result.sort_values("ratio", ascending=False).head(30).round(3))
 
 
 if __name__ == "__main__":
