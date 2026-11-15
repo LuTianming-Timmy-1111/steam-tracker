@@ -26,12 +26,23 @@ def tokenize(text):
         and re.fullmatch(r"[\u4e00-\u9fa5a-zA-Z]+", w)
     ]
 
-
 def doc_freq(texts):
     counter = Counter()
     for text in texts:
         counter.update(set(tokenize(text)))
     return counter
+
+def distinctive(a_c, a_n, b_c, b_n, min_n=50):
+    rows = []
+    for word, c in a_c.items():
+        if c < min_n:
+            continue
+        rate_a = c / a_n
+        rate_b = (b_c[word] + 1) / b_n
+        rows.append((word, c, rate_a, rate_b))
+    result = pd.DataFrame(rows, columns=["word", "n", "rate_a", "rate_b"])
+    result["ratio"] = result["rate_a"] / result["rate_b"]
+    return result.sort_values("ratio", ascending=False)
 
 
 def main():
@@ -41,17 +52,10 @@ def main():
     neg_c = doc_freq(neg["review"])
     pos_c = doc_freq(pos["review"])
     
-    rows = []
-    for word, c in neg_c.items():
-        if c < 50:
-            continue
-        neg_rate = c / len(neg)
-        pos_rate = (pos_c[word] + 1) / len(pos)
-        rows.append((word, c, neg_rate, pos_rate))
-
-    result = pd.DataFrame(rows, columns=["word", "neg_n", "neg_rate", "pos_rate"])
-    result["ratio"] = result["neg_rate"] / result["pos_rate"]
-    print(result.sort_values("ratio", ascending=False).head(30).round(3))
+    print("\n=== 差评特有 ===")
+    print(distinctive(neg_c, len(neg), pos_c, len(pos)).head(30).round(3))
+    print("\n=== 好评特有 ===")
+    print(distinctive(pos_c, len(pos), neg_c, len(neg)).head(30).round(3))
 
 
 if __name__ == "__main__":
